@@ -45,7 +45,7 @@ except:
     exit()
 
 options = webdriver.ChromeOptions()
-options.add_argument("--headless")
+# options.add_argument("--headless")
 try:
     driver = webdriver.Chrome(executable_path=path, options=options)
 except:
@@ -64,10 +64,22 @@ def bye():
 
 # ログイン処理
 driver.get(url)
-driver.find_element_by_id("sign_in_session_service_email").send_keys(email)
-driver.find_element_by_id("sign_in_session_service_password").send_keys(
-    password)
-driver.find_element_by_id("login-btn-sumit").submit()
+driver.find_element_by_xpath("/html/body/main/div/div/div/div/div["
+                             "1]/section/div/div/div[2]/div/a[1]").click()
+
+driver.find_element_by_xpath(
+    "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/input") \
+    .send_keys(email)
+driver.find_element_by_xpath(
+    "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/div[3]/input")\
+    .submit()
+
+driver.find_element_by_xpath("/html/body/main/div/div/div/div/div["
+                             "1]/section/form/div[2]/div/input[2]")\
+    .send_keys(password)
+driver.find_element_by_xpath(
+    "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/div["
+    "3]/input").submit()
 print("ログイン中...")
 
 # ログインメッセージ関連
