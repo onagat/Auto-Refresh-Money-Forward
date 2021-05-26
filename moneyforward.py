@@ -45,7 +45,7 @@ except:
     exit()
 
 options = webdriver.ChromeOptions()
-# options.add_argument("--headless")
+options.add_argument("--headless")
 try:
     driver = webdriver.Chrome(executable_path=path, options=options)
 except:
