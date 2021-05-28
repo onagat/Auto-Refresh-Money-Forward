@@ -4,6 +4,7 @@
 import os.path
 import shutil
 import configparser
+import pickle
 from selenium import webdriver
 
 url = "https://moneyforward.com/accounts"
@@ -54,6 +55,14 @@ except:
 driver.implicitly_wait(5)
 print("実行中...")
 
+driver.get(url)
+
+# cookie を読み込む。これは「新しいブラウザでログインがありました」というメールが毎度送信されるのを避けるため。
+if os.path.isfile("cookies.pkl"):
+    cookies = pickle.load(open("cookies.pkl", "rb"))
+    for cookie in cookies:
+        driver.add_cookie(cookie)
+
 
 # 関数を宣言
 def bye():
@@ -63,7 +72,6 @@ def bye():
 
 
 # ログイン処理
-driver.get(url)
 driver.find_element_by_xpath("/html/body/main/div/div/div/div/div["
                              "1]/section/div/div/div[2]/div/a[1]").click()
 
@@ -143,4 +151,8 @@ for i in range(account):
         "//form[starts-with(@action, '/faggregation_queue2/')]")[
         refreshed - 1].submit()
 print("更新が完了しました!")
+
+# cookie の保存
+pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
+
 bye()
