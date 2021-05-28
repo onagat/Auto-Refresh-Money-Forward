@@ -71,11 +71,11 @@ driver.find_element_by_xpath(
     "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/input") \
     .send_keys(email)
 driver.find_element_by_xpath(
-    "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/div[3]/input")\
+    "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/div[3]/input") \
     .submit()
 
 driver.find_element_by_xpath("/html/body/main/div/div/div/div/div["
-                             "1]/section/form/div[2]/div/input[2]")\
+                             "1]/section/form/div[2]/div/input[2]") \
     .send_keys(password)
 driver.find_element_by_xpath(
     "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/div["
