@@ -10,11 +10,13 @@ from selenium import webdriver
 url = "https://moneyforward.com/accounts"
 
 # パスが取得できない場合のみ手動書き換えしてください
-path = "/usr/local/bin/chromedriver"
+use_chromedriver = False  # True: Chrome または　False: Firefox
+driver_name = "chromedirver" if use_chromedriver else "geckodriver"
+path = f"/usr/local/bin/{driver_name}"
 
 # ChromeDriverのパスを自動取得
 try:
-    path = shutil.which("chromedriver")
+    path = shutil.which(driver_name)
 except:
     pass
 
@@ -45,12 +47,19 @@ except:
     create_conf()
     exit()
 
-options = webdriver.ChromeOptions()
+if use_chromedriver:
+    options = webdriver.ChromeOptions()
+else:
+    options = webdriver.FirefoxOptions()
 options.add_argument("--headless")
+
 try:
-    driver = webdriver.Chrome(executable_path=path, options=options)
+    if use_chromedriver:
+        driver = webdriver.Chrome(executable_path=path, options=options)
+    else:
+        driver = webdriver.Firefox(executable_path=path, options=options)
 except:
-    print("chromedriverが見つかりません。パスをこのファイルに直接記載してください。")
+    print(f"{driver_name}が見つかりません。パスをこのファイルに直接記載してください。")
     exit()
 driver.implicitly_wait(5)
 print("実行中...")
@@ -72,8 +81,9 @@ def bye():
 
 
 # ログイン処理
-driver.find_element_by_xpath("/html/body/main/div/div/div/div/div["
-                             "1]/section/div/div/div[2]/div/a[1]").click()
+item = driver.find_element_by_xpath("/html/body/main/div/div/div/div/div["
+                             "1]/section/div/div/div[2]/div/a[1]")
+item.click()
 
 driver.find_element_by_xpath(
     "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/input") \
