@@ -7,6 +7,8 @@ import configparser
 import pickle
 from selenium import webdriver
 
+DEBUG = False
+
 url = "https://moneyforward.com/accounts"
 
 # パスが取得できない場合のみ手動書き換えしてください
@@ -51,7 +53,8 @@ if use_chromedriver:
     options = webdriver.ChromeOptions()
 else:
     options = webdriver.FirefoxOptions()
-options.add_argument("--headless")
+if not DEBUG:
+    options.add_argument("--headless")
 
 try:
     if use_chromedriver:
@@ -66,11 +69,26 @@ print("実行中...")
 
 driver.get(url)
 
-# cookie を読み込む。これは「新しいブラウザでログインがありました」というメールが毎度送信されるのを避けるため。
+# ログイン処理
+# cookie を読み込む
 if os.path.isfile("cookies.pkl"):
+    # 2回目以降は、自動でメールでログインの画面が開かれ、メールアドレスが打ち込まれている
     cookies = pickle.load(open("cookies.pkl", "rb"))
     for cookie in cookies:
         driver.add_cookie(cookie)
+    driver.get(url)
+else:
+    # 初回はメールでログインを開く
+    driver.find_element_by_xpath(
+        "/html/body/main/div/div/div/div/div[1]/section/"
+        "div/div/div[2]/div/a[1]").click()
+    # メールを入力
+    driver.find_element_by_xpath(
+        "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/"
+        "input").send_keys(email)
+driver.find_element_by_xpath(
+    "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/"
+    "div[3]/input").submit()
 
 
 # 関数を宣言
@@ -79,19 +97,7 @@ def bye():
     driver.quit()
     exit()
 
-
-# ログイン処理
-item = driver.find_element_by_xpath("/html/body/main/div/div/div/div/div["
-                             "1]/section/div/div/div[2]/div/a[1]")
-item.click()
-
-driver.find_element_by_xpath(
-    "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/input") \
-    .send_keys(email)
-driver.find_element_by_xpath(
-    "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/div[3]/input") \
-    .submit()
-
+# パスワードを入力
 driver.find_element_by_xpath("/html/body/main/div/div/div/div/div["
                              "1]/section/form/div[2]/div/input[2]") \
     .send_keys(password)
@@ -160,6 +166,8 @@ for i in range(account):
     driver.find_elements_by_xpath(
         "//form[starts-with(@action, '/faggregation_queue2/')]")[
         refreshed - 1].submit()
+print("待機中・・・")
+driver.implicitly_wait(10)
 print("更新が完了しました!")
 
 # cookie の保存
