@@ -6,6 +6,7 @@ import shutil
 import configparser
 import pickle
 from selenium import webdriver
+from selenium.webdriver.firefox import service as fs
 
 DEBUG = False
 
@@ -60,8 +61,10 @@ try:
     if use_chromedriver:
         driver = webdriver.Chrome(executable_path=path, options=options)
     else:
-        driver = webdriver.Firefox(executable_path=path, options=options)
-except:
+        firefox_servie = fs.Service(executable_path=path)
+        driver = webdriver.Firefox(service=firefox_servie, options=options)
+except Exception as e:
+    print(e)
     print(f"{driver_name}が見つかりません。パスをこのファイルに直接記載してください。")
     exit()
 driver.implicitly_wait(5)
@@ -79,16 +82,16 @@ if os.path.isfile("cookies.pkl"):
     driver.get(url)
 else:
     # 初回はメールでログインを開く
-    driver.find_element_by_xpath(
+    driver.find_element("xpath", 
         "/html/body/main/div/div/div/div/div[1]/section/"
         "div/div/div[2]/div/a[1]").click()
     # メールを入力
-    driver.find_element_by_xpath(
+    driver.find_element("xpath", 
         "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/"
         "input").send_keys(email)
-driver.find_element_by_xpath(
+driver.find_element("xpath", 
     "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/"
-    "div[3]/input").submit()
+    "div[4]/input").submit()
 
 
 # 関数を宣言
@@ -98,28 +101,28 @@ def bye():
     exit()
 
 # パスワードを入力
-driver.find_element_by_xpath("/html/body/main/div/div/div/div/div["
+driver.find_element("xpath", "/html/body/main/div/div/div/div/div["
                              "1]/section/form/div[2]/div/input[2]") \
     .send_keys(password)
-driver.find_element_by_xpath(
+driver.find_element("xpath", 
     "/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/div["
     "3]/input").submit()
 print("ログイン中...")
 
 # ログインメッセージ関連
-if driver.find_elements_by_xpath(
+if driver.find_elements("xpath",
         "//*[contains(text(), 'メールアドレスもしくはパスワードが間違っています')]"):
     print("メールアドレスもしくはパスワードが間違っています。\n再設定完了後、再度起動してください。")
     create_conf()
     bye()
-elif driver.find_elements_by_xpath(
+elif driver.find_elements("xpath",
         "//*[contains(text(), 'マネーフォワードに登録されていない端末・ブラウザからのログインです。')]"):
     print("二段階認証が必要です。メールを確認し、10分以内に認証コードを入力してください。")
     two_factor_auth_code = input("認証コード: ")
-    driver.find_element_by_id("verification_code").send_keys(
+    driver.find_element("id", "verification_code").send_keys(
         two_factor_auth_code)
-    driver.find_element_by_class_name("form-submit-code").submit()
-    if driver.find_elements_by_xpath(
+    driver.find_element("class_name", "form-submit-code").submit()
+    if driver.find_elements("xpath",
             "//*[contains(text(), '認証コードが無効です。')]") or len(
         two_factor_auth_code) == 0:
         print("認証コードが無効です。")
@@ -138,11 +141,11 @@ except:
     pass
 
 # 更新すべき対象の数を計算
-account = len(driver.find_elements_by_xpath(
+account = len(driver.find_elements("xpath",
     "//form[starts-with(@action, '/faggregation_queue2/')]"))
-needauth = len(driver.find_elements_by_link_text(
-    "要画像認証") + driver.find_elements_by_link_text(
-    "要ワンタイムパスワード") + driver.find_elements_by_xpath(
+needauth = len(driver.find_elements("link text",
+    "要画像認証") + driver.find_elements("link text",
+    "要ワンタイムパスワード") + driver.find_elements("xpath",
     "//*[contains(text(), '重要なお知らせ')]"))
 
 if account == 0:
@@ -163,11 +166,11 @@ for i in range(account):
     if remaining == 0:
         remaining = "なし"
     print(str(refreshed) + "番目を更新中..." + "(残り" + str(remaining) + ")")
-    driver.find_elements_by_xpath(
+    driver.find_elements("xpath",
         "//form[starts-with(@action, '/faggregation_queue2/')]")[
         refreshed - 1].submit()
 print("待機中・・・")
-driver.implicitly_wait(10)
+driver.implicitly_wait(15)
 print("更新が完了しました!")
 
 # cookie の保存
